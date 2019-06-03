@@ -3,7 +3,7 @@ import json
 import os
 import subprocess
 from queue import Queue
-from bottle import route, run, Bottle, request, static_file
+from bottle import route, run, Bottle, request, static_file, auth_basic
 from threading import Thread
 import youtube_dl
 from pathlib import Path
@@ -22,24 +22,36 @@ app_defaults = {
     'YDL_SERVER_HOST': '0.0.0.0',
     'YDL_SERVER_PORT': 8080,
 }
+username = os.environ['username']
+password = os.environ['password']
+
+def authCheck(user, pass):
+	if (user == username) and (pass == password):
+		return true
+	else:
+		return false
 
 
 @app.route('/youtube-dl')
+@auth_basic(authCheck)
 def dl_queue_list():
     return static_file('index.html', root='./')
 
 
 @app.route('/youtube-dl/static/:filename#.*#')
+@auth_basic(authCheck)
 def server_static(filename):
     return static_file(filename, root='./static')
 
 
 @app.route('/youtube-dl/q', method='GET')
+@auth_basic(authCheck)
 def q_size():
     return {"success": True, "size": json.dumps(list(dl_q.queue))}
 
 
 @app.route('/youtube-dl/q', method='POST')
+@auth_basic(authCheck)
 def q_put():
     url = request.forms.get("url")
     options = {
