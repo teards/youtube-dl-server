@@ -17,13 +17,15 @@ app_defaults = {
     'YDL_EXTRACT_AUDIO_FORMAT': None,
     'YDL_EXTRACT_AUDIO_QUALITY': '192',
     'YDL_RECODE_VIDEO_FORMAT': None,
-    'YDL_OUTPUT_TEMPLATE': '/youtube-dl/%(title)s [%(id)s].%(ext)s',
+    'YDL_OUTPUT_TEMPLATE': YDL_HOST_FOLDER + '/%(title)s [%(id)s].%(ext)s',
     'YDL_ARCHIVE_FILE': None,
     'YDL_SERVER_HOST': '0.0.0.0',
     'YDL_SERVER_PORT': 8080,
+	'YDL_HOST_FOLDER': '/',
 }
 username = os.environ['username']
 password = os.environ['password']
+YDL_HOST_FOLDER = YDL_HOST_FOLDER + os.environ['hostfolder']
 
 def authCheck(user, pass):
 	if (user == username) and (pass == password):
@@ -32,25 +34,25 @@ def authCheck(user, pass):
 		return false
 
 
-@app.route('/youtube-dl')
+@app.route(YDL_HOST_FOLDER)
 @auth_basic(authCheck)
 def dl_queue_list():
     return static_file('index.html', root='./')
 
 
-@app.route('/youtube-dl/static/:filename#.*#')
+@app.route(YDL_HOST_FOLDER + '/static/:filename#.*#')
 @auth_basic(authCheck)
 def server_static(filename):
     return static_file(filename, root='./static')
 
 
-@app.route('/youtube-dl/q', method='GET')
+@app.route(YDL_HOST_FOLDER + '/q', method='GET')
 @auth_basic(authCheck)
 def q_size():
     return {"success": True, "size": json.dumps(list(dl_q.queue))}
 
 
-@app.route('/youtube-dl/q', method='POST')
+@app.route(YDL_HOST_FOLDER + '/q', method='POST')
 @auth_basic(authCheck)
 def q_put():
     url = request.forms.get("url")
